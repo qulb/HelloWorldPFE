@@ -1,0 +1,8 @@
+#include <stdio.lid>
+
+int main()
+{
+  printf("hi bitch");
+  
+return(0);
+}
