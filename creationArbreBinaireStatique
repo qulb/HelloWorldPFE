@@ -1,0 +1,147 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+//typedef enum { 1 = 1, 0 = 0} int;
+
+typedef struct tree
+{
+    char *val;
+    int valB;
+    struct tree *fg;
+    struct tree *fd;
+}tree;
+
+void ajoutArbre (tree *prems, char *valeur, int valeurB, char *direction){
+    tree *nouv=(tree*) malloc(sizeof(tree*));
+    nouv->val=valeur;
+    nouv->valB=valeurB;
+    nouv->fg=NULL;
+    nouv->fd=NULL;
+
+    //tree *nouv = creerArbre(valeur, valeurB);
+    //printf("%d",valeur);
+    while (prems!=nouv)
+        {
+        if (direction == "gauche")
+        {
+            if (prems->fg == NULL)
+            {
+                prems->fg=nouv;
+            }
+            prems=prems->fg;
+        }
+        else if (direction == "droite")
+        {
+            if (prems->fd == NULL){
+                prems->fd=nouv;
+        }
+            prems=prems->fd;
+        }
+    }
+}
+
+tree *creerArbre (char *andor, int feuille)
+{
+    tree *prem=(tree*) malloc(sizeof(tree*));
+    if (prem != NULL)
+    {
+        prem->val=andor;
+        prem->valB = feuille;
+        prem->fg=NULL;
+        prem->fd=NULL;
+    }
+
+    return prem;
+}
+
+tree *construireArbreParFille(char x[], int valB, tree *gauche, tree *droite)
+{
+    tree *pere=malloc(sizeof(tree *));
+    if (pere != NULL)
+    {
+        pere->val=x;
+        pere->valB=valB;
+        pere->fg=gauche;
+        pere->fd=droite;
+    }
+    return pere;
+}
+
+int profondeur(tree *r)
+{
+    int p1, p2;
+    if (r == NULL)
+        return 0;
+    p1=profondeur(r->fg);
+    p2=profondeur(r->fd);
+
+    if (p1>p2)
+        return p1;
+    else return p2;
+}
+
+
+
+void parcourirArbre (tree *n){
+    if(n!=NULL){
+
+        parcourirArbre(n->fg);
+        parcourirArbre(n->fd);
+        if (n->val != NULL)
+        {
+            printf("%s\n",n->val);
+        }
+        else
+            printf("%d\n", n->valB);
+
+    }
+}
+
+int main()
+{
+    //les paramètres demandés par la politique
+    int a=0;
+    int b = 0;
+    int e=0;
+    //e = a = b = 0;
+    int c = 1;
+    int d = 1;
+    //création de la racine
+    /*tree *arbre=creerArbre("AND", 0);
+
+    printf("%s\n", arbre->val);
+
+    arbre->fg = creerArbre(NULL, e);
+    printf("%d", arbre->fg->valB);
+
+*/
+    //on crée ensuite chaque noeud
+
+    //Partie totalement à gauche
+    tree *arbre = creerArbre ("AND", NULL);
+    arbre->fg = creerArbre(NULL, e);
+    arbre->fd = creerArbre ("OR", NULL);
+
+    //Gros bloc de gauche à droite
+    arbre->fd->fg = creerArbre ("OR", NULL);
+    arbre->fd->fg->fg = creerArbre ("AND", NULL);
+    arbre->fd->fg->fd = creerArbre ("AND", NULL);
+    arbre->fd->fg->fg->fg = creerArbre (NULL, a);
+    arbre->fd->fg->fg->fd = creerArbre (NULL, b);
+    arbre->fd->fg->fd->fg = creerArbre (NULL, c);
+    arbre->fd->fg->fd->fd = creerArbre (NULL, d);
+
+    //Gros bloc de gauche à gauche
+    arbre->fd->fd = creerArbre ("AND", NULL);
+    arbre->fd->fd->fg = creerArbre ("OR", NULL);
+    arbre->fd->fd->fd = creerArbre ("OR", NULL);
+    arbre->fd->fd->fg->fg = creerArbre (NULL, a);
+    arbre->fd->fd->fg->fd = creerArbre (NULL, b);
+    arbre->fd->fd->fd->fg = creerArbre (NULL, c);
+    arbre->fd->fd->fd->fd = creerArbre (NULL, d);
+
+    parcourirArbre(arbre);
+
+    printf("Hello world!\n");
+    return 0;
+}
