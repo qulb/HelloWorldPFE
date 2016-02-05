@@ -1,0 +1,134 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct arbre Arbre;
+struct arbre
+{
+    char *val;                  //Valeur AND, OR ou booléen en chaîne de caractère.
+    int label[5];                 //Le label remplace le vecteur v, et se propage de noeud non-feuille en noeud non-feuille
+    Arbre *frere;               //Chaque noeud possède un petit frère. S'il n'en possède pas, valeur à NULL
+    Arbre *enfant;              //Le grand frère de la descendance du noeud
+};
+
+
+
+
+//Pour vérifier que l'arbre a bien une taille correcte
+//et donc qu'on le parcourt en entier et dans le bon sens
+int taille(Arbre *noeud)
+{
+    Arbre *enfant;
+    int compteur = 1;
+    for (enfant = noeud->enfant; enfant != NULL; enfant = enfant->frere)       //on parcourt récursivement la
+            compteur += taille(enfant);                                        //déscendance de chaque fraterie
+    return compteur;
+}
+
+int **parcourirArbre(Arbre *noeud)
+{
+    //on intialise nos variables compteur c, vecteur v, nullifié pour le padding.
+    int **tabInt=NULL;
+    int k=0;
+    Arbre *enfant;
+    int c=1;
+
+    for (enfant = noeud->enfant; enfant != NULL; enfant = enfant->frere)        //Même type de parcours que ci-dessus
+    {
+        if (noeud->val == 'AND')                        //si noeud AND
+        {
+            c++;                                        //c représente la longueur active de notre vecteur
+            for (int i=0; i<c; i++)
+            {
+                enfant->label[i]=noeud->label[i];       //Le grand frère (à gauche) reçoit le label actif du père
+            }
+            enfant->label[c]=1;                         // On concatène 1 au label du grand frère
+            for (int j; j<c; j++)
+            {
+                enfant->frere->label[j]=0;              // Le petit frère est initialisé à 0
+            }
+            enfant->frere->label[c]=-1;                 //sauf sa dernière valeur qui est -1
+            parcourirArbre(enfant);
+        }
+
+        else if (noeud->val == 'OR')                    // Pour le noeud OR, pas de distinction entre frère : même
+        {                                               // label
+            for (int i=0; i<c; i++)
+            {
+                enfant->label[i]=noeud->label[i];
+                enfant->frere->label[i]=noeud->label[i];
+            }
+            parcourirArbre(enfant);
+        }
+
+        else                                            //On atteint une feuille
+        {
+            for (int i=0; i<5; i++)
+                tabInt[k][i]=noeud->label[i];           // On remplit la ligne pointée de la matrice
+            k++;                                        // Et on pointe une ligne plus loin
+        }
+    }
+    return tabInt;
+}
+
+int main()
+{
+    //on se définit statiquement un arbre depuis ses feuilles jusqu'à sa racine
+    Arbre D1 = {'D',NULL, NULL, NULL};
+    Arbre C1 = {'C',NULL, &D1, NULL};
+    Arbre B1 = {'B',NULL, NULL, NULL};
+    Arbre A1 = {'A',NULL, &B1, NULL};
+    Arbre D2 = {'D',NULL, NULL, NULL};
+    Arbre C2 = {'C',NULL, &D2, NULL};
+    Arbre B2 = {'B',NULL, NULL, NULL};
+    Arbre A2 = {'A',NULL, &B2, NULL};
+    Arbre OR1 = {'OR',NULL, NULL, &C1};
+    Arbre OR2 = {'OR',NULL, &OR1, &A1};
+    Arbre AND1 = {'AND',NULL, NULL, &C2};
+    Arbre AND2 = {'AND',NULL, &AND1, &A2};
+    Arbre AND3 = {'AND', NULL,&OR2, NULL};
+    Arbre OR3 = {'B', NULL,&AND3, &AND2};
+    Arbre AND4 = {'A', NULL,NULL, &OR3};
+    Arbre E = {'E', NULL,&AND4, NULL};
+    Arbre AND5 = {'AND', {1}, NULL, &E};
+
+/*          L'arbre généré :
+
+              AND
+            /      \
+           /        \
+          /          \
+         E            AND
+                   /      \
+                  /          \
+                 /              \
+               OR                 AND
+             /    \             /     \
+            /      \           /       \
+           /        \         /         \
+        AND         AND      OR          OR
+       /   \        /  \    /   \       /   \
+      A     B      C    D  A     B     C      D
+
+
+*/
+
+//on vérifie que la taille donnée par la racine et une feuilles sont les bonnes
+//ainsi, on sait que notre parcours de l'arbre est correct
+    printf("%d\n",taille(&AND5));
+    printf("%d\n",taille(&D1));
+
+    int **matrice={{0},{0}};                                // On initialise notre matrice
+    matrice = parcourirArbre(&AND5);                        // On lui donne la valeur de la matrice après parcours
+
+    for (int i=0; i<9; i++)                                 // On affiche la matrice
+    {
+        for(int j=0; j<5; j++)
+        {
+            printf("%d", matrice[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("Hello world!\n");
+    return 0;
+}
